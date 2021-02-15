@@ -78,7 +78,7 @@ fn main() {
     let white = image::Rgb([255, 255, 255]);
     let black = image::Rgb([0, 0, 0]);
 
-    img = drawing::draw_polygon(&img, &starting_triangle.points, white);
+    drawing::draw_polygon_mut(&mut img, &starting_triangle.points, white);
 
     triangle_vec.push(starting_triangle);
 
@@ -86,7 +86,7 @@ fn main() {
         println!("{}", triangle_vec.len());
         let mut sub_triangles = Vec::new();
         for tri in &triangle_vec {
-            img = drawing::draw_polygon(&img, &center_triangle(&tri).points, black);
+            drawing::draw_polygon_mut(&mut img, &center_triangle(&tri).points, black);
             sub_triangles.append(&mut split_triangle(&tri));
         }
 
