@@ -1,5 +1,5 @@
 [package]
-name = "SierpinskiTriangle-rs"
+name = "sierpinski_triangle_rs"
 version = "0.1.0"
 authors = ["CyberMobius"]
 edition = "2018"

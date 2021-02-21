@@ -60,43 +60,27 @@ fn midpoint(point_1: &Point<i32>, point_2: &Point<i32>) -> Point<i32> {
     Point { x: mid_x, y: mid_y }
 }
 
-/// Given a triangle, break it up like the triforce, and return 3 triangles representing
-/// the corners
-/// # Arguments
-///
-/// * `triangle: &Triangle` - A triangle to split up
-fn split_triangle(triangle: &Triangle) -> Vec<Triangle> {
-    let p = triangle.points;
-    let sub_triangle = |index_list: &[usize; 3]| {
-        let head = &p[index_list[0]];
+/// Returns a tuple of (center_triangle, corner_triangles)
+fn subdivide_triangle(triangle: &Triangle) -> (Triangle, Vec<Triangle>) {
+    let [a, b, c] = triangle.points;
+    let [ab, ac, bc] = [midpoint(&a, &b), midpoint(&a, &c), midpoint(&b, &c)];
 
-        let left = &p[index_list[1]];
-        let left = midpoint(head, left);
-
-        let right = &p[index_list[2]];
-        let right = midpoint(head, right);
-
-        return Triangle {
-            points: [*head, left, right],
-        };
-    };
-
-    [[0, 1, 2], [1, 2, 0], [2, 0, 1]]
-        .iter()
-        .map(|indices| sub_triangle(indices))
-        .collect()
-}
-
-/// Given a triangle ABC_t, return a new triangle with vertices midpoint(AB), midpoint(BC), midpoint(CA)
-fn center_triangle(triangle: &Triangle) -> Triangle {
-    let p = triangle.points;
-    return Triangle {
-        points: [
-            midpoint(&p[0], &p[1]),
-            midpoint(&p[1], &p[2]),
-            midpoint(&p[2], &p[0]),
+    return (
+        Triangle {
+            points: [ab, ac, bc],
+        },
+        vec![
+            Triangle {
+                points: [a, ab, ac],
+            },
+            Triangle {
+                points: [b, ab, bc],
+            },
+            Triangle {
+                points: [c, ac, bc],
+            },
         ],
-    };
+    );
 }
 
 /// Given the dimensions of an image to draw on, return the largest equilateral triangle
@@ -164,10 +148,13 @@ fn draw_sierpinski_triangle(
     triangle_vec.push(starting_triangle);
 
     loop {
-        let mut sub_triangles = Vec::new();
+        let mut sub_triangles: Vec<Triangle> = Vec::new();
+
         for tri in &triangle_vec {
-            drawing::draw_polygon_mut(&mut img, &center_triangle(&tri).points, empty_color);
-            sub_triangles.append(&mut split_triangle(&tri));
+            let (center_triangle, mut corner_triangles) = subdivide_triangle(tri);
+
+            drawing::draw_polygon_mut(&mut img, &center_triangle.points, empty_color);
+            sub_triangles.append(&mut corner_triangles);
         }
 
         if let Some(tri) = sub_triangles.first() {
